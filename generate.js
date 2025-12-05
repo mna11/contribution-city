@@ -327,19 +327,13 @@ function generateSVG(weekData, totalContributions) {
   </text>
   
   <!-- 통계 바 -->
-  <rect x="${width/2 - 180}" y="${height - 55}" width="360" height="40" rx="20" fill="#0a0a15" opacity="0.7"/>
-  <text x="${width/2 - 100}" y="${height - 28}" text-anchor="middle" fill="#8a9aaa" font-family="'SF Pro Display', Arial, sans-serif" font-size="12">
-    This Week
+  <rect x="${width/2 - 180}" y="${height - 35}" width="360" height="30" rx="15" fill="#0a0a15" opacity="0.7"/>
+  <text x="${width/2 - 80}" y="${height - 15}" text-anchor="middle" fill="#8a9aaa" font-family="'SF Pro Display', Arial, sans-serif" font-size="11">
+    This Week: <tspan fill="#4a9eff" font-weight="600">${weekTotal}</tspan>
   </text>
-  <text x="${width/2 - 100}" y="${height - 12}" text-anchor="middle" fill="#4a9eff" font-family="'SF Pro Display', Arial, sans-serif" font-size="16" font-weight="600">
-    ${weekTotal}
-  </text>
-  <line x1="${width/2}" y1="${height - 45}" x2="${width/2}" y2="${height - 25}" stroke="#3a4a5a" stroke-width="1"/>
-  <text x="${width/2 + 100}" y="${height - 28}" text-anchor="middle" fill="#8a9aaa" font-family="'SF Pro Display', Arial, sans-serif" font-size="12">
-    Total
-  </text>
-  <text x="${width/2 + 100}" y="${height - 12}" text-anchor="middle" fill="#4a9eff" font-family="'SF Pro Display', Arial, sans-serif" font-size="16" font-weight="600">
-    ${totalContributions}
+  <line x1="${width/2}" y1="${height - 28}" x2="${width/2}" y2="${height - 12}" stroke="#3a4a5a" stroke-width="1"/>
+  <text x="${width/2 + 80}" y="${height - 15}" text-anchor="middle" fill="#8a9aaa" font-family="'SF Pro Display', Arial, sans-serif" font-size="11">
+    Total: <tspan fill="#4a9eff" font-weight="600">${totalContributions}</tspan>
   </text>
 </svg>`;
 
