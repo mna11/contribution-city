@@ -79,7 +79,7 @@ function getLastWeekData(calendar) {
 // SVG 생성
 function generateSVG(weekData, totalContributions) {
     const width = 900;
-    const height = 450;
+    const height = 500;
     
     const buildingWidth = 85;
     const gap = 18;
