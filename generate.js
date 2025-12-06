@@ -99,9 +99,6 @@ const dotFont = {
     'A': [[0,1,0],[1,0,1],[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,0,1]],
     'L': [[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],
     'Y': [[1,0,1],[1,0,1],[1,0,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0]],
-    'C': [[1,1,1],[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],
-    'B': [[1,1,0],[1,0,1],[1,0,1],[1,1,0],[1,0,1],[1,0,1],[1,1,0]],
-    ':': [[0],[0],[1],[0],[0],[1],[0]],
     ' ': [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
 };
 
@@ -125,13 +122,13 @@ function generateSVG(weekData, totalContributions) {
 
     // --- 헬퍼: 큐브(Block) 그리기 ---
     const drawBlock = (gx, gy, gz, w, d, h, colors) => {
-        const p0 = iso(gx, gy, gz + h);
-        const p1 = iso(gx + w, gy, gz + h);
-        const p2 = iso(gx + w, gy + d, gz + h);
-        const p3 = iso(gx, gy + d, gz + h);
-        const p4 = iso(gx + w, gy + d, gz);
-        const p5 = iso(gx, gy + d, gz);
-        const p6 = iso(gx + w, gy, gz);
+        const p0 = iso(gx, gy, gz + h);          // Top-Back-Left
+        const p1 = iso(gx + w, gy, gz + h);      // Top-Back-Right
+        const p2 = iso(gx + w, gy + d, gz + h);  // Top-Front-Right
+        const p3 = iso(gx, gy + d, gz + h);      // Top-Front-Left
+        const p4 = iso(gx + w, gy + d, gz);      // Bottom-Front-Right
+        const p5 = iso(gx, gy + d, gz);          // Bottom-Front-Left
+        const p6 = iso(gx + w, gy, gz);          // Bottom-Back-Right
 
         let svg = '';
         svg += `<polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}" fill="${colors.top}"/>`;
@@ -171,14 +168,14 @@ function generateSVG(weekData, totalContributions) {
     // --- 렌더링 큐 (Painter's Algorithm) ---
     let renderQueue = [];
 
-    // 1. 상단 잔디 (뒤쪽, 건물 아래) : gy = -5 ~ 0
+    // 1. 상단 잔디 (뒤쪽, 건물 아래) : gy = -5 ~ 0.1
+    // 도로와의 틈을 없애기 위해 0보다 약간 크게 확장
     renderQueue.push({
         depth: -200,
         draw: () => {
             let s = '';
             const grassColor = { top: '#1b3a1b', right: '#102210', left: '#152b15' };
-            // gy 범위를 0까지 확장하여 도로와 맞닿게 함
-            s += drawBlock(-6, -5, 0, 22, 5, 1.0, grassColor);
+            s += drawBlock(-6, -5, 0, 22, 5.2, 1.0, grassColor); // d를 5.2로 늘림
             
             for(let i=0; i<40; i++) {
                 const rx = -5 + Math.random() * 20;
@@ -189,30 +186,28 @@ function generateSVG(weekData, totalContributions) {
         }
     });
 
-    // 2. 도로 (중앙) : gy = 0 ~ 6
+    // 2. 도로 (중앙) : gy = 0.2 ~ 6
     renderQueue.push({
         depth: -100,
         draw: () => {
             let s = '';
             const roadColor = { top: '#333333', right: '#222222', left: '#2a2a2a' };
-            // gy 시작점을 0으로 하여 상단 잔디와 연결
-            s += drawBlock(-8, 0, 0, 26, 6, 0.2, roadColor);
+            s += drawBlock(-8, 0.2, 0, 26, 6, 0.2, roadColor);
             
             for (let x = -6; x < 18; x += 2) {
-                s += drawBlock(x, 3, 0.25, 1, 0.4, 0.05, { top: '#ffcc00', right: 'none', left: 'none' });
+                s += drawBlock(x, 3.2, 0.25, 1, 0.4, 0.05, { top: '#ffcc00', right: 'none', left: 'none' });
             }
             return s;
         }
     });
 
-    // 3. 하단 잔디 (앞쪽) : gy = 6 ~ 11
+    // 3. 하단 잔디 (앞쪽) : gy = 6.2 ~ 11
     renderQueue.push({
         depth: 50,
         draw: () => {
             let s = '';
             const grassColor = { top: '#152b15', right: '#0d1a0d', left: '#102010' };
-            // gy 시작점을 6으로 하여 도로와 연결
-            s += drawBlock(-8, 6, -0.5, 26, 5, 1.0, grassColor);
+            s += drawBlock(-8, 6.2, -0.5, 26, 5, 1.0, grassColor);
             return s;
         }
     });
@@ -243,17 +238,23 @@ function generateSVG(weekData, totalContributions) {
                     s += drawBlock(gx+0.2, gy+0.2, 66.0, 0.6, 0.6, 1.5, poleColor);
                     s += drawBlock(gx+0.35, gy+0.35, 67.5, 0.3, 0.3, 4, poleColor);
 
-                    // 텍스트 간격 조정 (요일 높이 증가)
-                    s += drawVoxelText(dayNames[day.weekday], gx-0.1, gy, 80, '#8899aa', 0.08); 
-                    s += drawVoxelText('0', gx+0.3, gy, 64, '#ffdd66', 0.1); 
+                    // 텍스트 위치: gx를 살짝 조정하여 중앙 정렬, 높이 충분히 확보
+                    // 가로등은 얇아서 글자가 겹치기 쉬우므로 간격을 더 둠
+                    const textCenterX = gx; 
+                    s += drawVoxelText(dayNames[day.weekday], textCenterX - 0.2, gy, 85, '#8899aa', 0.08); 
+                    s += drawVoxelText('0', textCenterX + 0.3, gy, 68, '#ffdd66', 0.1); 
                 } else {
                     // === 건물 ===
                     const h = Math.min(150, 35 + count * 8);
                     const bColor = { top: '#5a5a4a', right: '#3a3a2a', left: '#4a4a3a' };
                     
+                    // 건물 본체 (깊이 1.2, 너비 1.2)
                     s += drawBlock(gx, gy, 1.0, 1.2, 1.2, h, bColor);
 
-                    // 창문 그리기 함수
+                    // [수정됨] 창문 로직 반전
+                    // 정면(도로쪽) = Left Face (gy 증가 방향 면)
+                    // 우측면 = Right Face (gx 증가 방향 면)
+                    
                     const drawWindows = (faceGx, faceGy, isRightFace) => {
                         let ws = '';
                         const winRows = Math.floor(h / 15);
@@ -265,25 +266,39 @@ function generateSVG(weekData, totalContributions) {
                                 ? { top: '#fdd835', right: '#fbc02d', left: '#ffeb3b' }
                                 : { top: '#1a1a15', right: '#151510', left: '#181815' };
                             
-                            const wDepth = isRightFace ? 0.1 : 0.3;
-                            const wWidth = isRightFace ? 0.3 : 0.1;
-
-                            ws += drawBlock(faceGx, faceGy, wz, wWidth, wDepth, 8, wColor);
+                            // 우측면(Right Face) 창문은 깊이가 얇고(d small) 너비가 넓음(w normal) -> 반대로 수정
+                            // 우측면 창문: 벽면을 따라가야 함. gx는 고정(벽 위치), gy가 변함.
+                            
+                            if (isRightFace) {
+                                // Right Face는 gx + width 위치에 있는 면임 (gy 방향으로 뻗음)
+                                // 블록 자체는 얇아야 함 (gx 방향 두께 얇음)
+                                ws += drawBlock(faceGx, faceGy, wz, 0.1, 0.3, 8, wColor);
+                            } else {
+                                // Left Face는 gy + depth 위치에 있는 면임 (gx 방향으로 뻗음)
+                                // 블록 자체는 얇아야 함 (gy 방향 두께 얇음)
+                                ws += drawBlock(faceGx, faceGy, wz, 0.3, 0.1, 8, wColor);
+                            }
                         }
                         return ws;
                     };
 
-                    // 우측면 창문 (Right Face)
+                    // 1. 우측면 창문 (Right Face)
+                    // 건물 우측 벽 좌표: gx + 1.2
+                    // 창문 위치: gy + 0.2, gy + 0.7
                     s += drawWindows(gx + 1.2, gy + 0.2, true);
                     s += drawWindows(gx + 1.2, gy + 0.7, true);
                     
-                    // 정면(도로방향) 창문 (Left Face)
+                    // 2. 정면 창문 (Left Face -> 도로 방향)
+                    // 건물 앞 벽 좌표: gy + 1.2
+                    // 창문 위치: gx + 0.2, gx + 0.7
                     s += drawWindows(gx + 0.2, gy + 1.2, false);
                     s += drawWindows(gx + 0.7, gy + 1.2, false);
 
-                    // 텍스트 라벨 (간격 조정: 요일 높이 증가)
-                    s += drawVoxelText(dayNames[day.weekday], gx-0.1, gy, h + 25, '#90a4ae', 0.08);
-                    s += drawVoxelText(count.toString(), gx+0.2, gy+0.2, h + 5, '#ffdd66', 0.1); 
+                    // 텍스트 라벨 (겹침 방지)
+                    // 요일(DAY)을 건물 훨씬 위로 올림
+                    s += drawVoxelText(dayNames[day.weekday], gx - 0.2, gy, h + 25, '#90a4ae', 0.08);
+                    // 숫자(Count)는 건물 바로 위
+                    s += drawVoxelText(count.toString(), gx + 0.3, gy + 0.5, h + 5, '#ffdd66', 0.1); 
                 }
                 return s;
             }
@@ -296,7 +311,7 @@ function generateSVG(weekData, totalContributions) {
         draw: () => {
             let s = '';
             const cx = -3; 
-            const cy = 2.5; // 도로 위쪽으로 이동
+            const cy = 2.5; 
             const cz = 0.3;
             
             s += drawBlock(cx, cy, cz, 2.8, 1.2, 2.5, { top: '#42a5f5', right: '#1e88e5', left: '#2196f3' });
@@ -316,7 +331,7 @@ function generateSVG(weekData, totalContributions) {
         objectsSvg += obj.draw();
     });
 
-    // --- 배경 장식 (기존 유지) ---
+    // --- 배경 장식 ---
     let stars = '';
     for (let i = 0; i < 60; i++) {
         const sx = Math.random() * width;
