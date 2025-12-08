@@ -189,13 +189,13 @@ async function generateContributionCity() {
     
     const calendar = await fetchContributions();
     let weekData = calendar ? getLastWeekContributions(calendar) : [];
-    
-    // 전체 커밋 수 계산
-    let totalCommits = 0;
+
+    // 연간 커밋 수 계산 (최근 1년)
+    let yearCommits = 0;
     if (calendar && calendar.weeks) {
         calendar.weeks.forEach(week => {
             week.contributionDays.forEach(day => {
-                totalCommits += day.contributionCount;
+                yearCommits += day.contributionCount;
             });
         });
     }
@@ -218,7 +218,7 @@ async function generateContributionCity() {
     // API 데이터가 없으면 테스트 데이터 사용
     if (weekData.length !== 7) {
         weekData = testData;
-        totalCommits = 1234; // 테스트용 총 커밋 수
+        yearCommits = 1234; // 테스트용 연간 커밋 수
         console.log('Using test data (API unavailable)');
     }
     
@@ -230,7 +230,7 @@ async function generateContributionCity() {
         const dayName = WEEKDAY_NAMES[new Date(d.date).getDay()];
         console.log(`  ${i + 1}. ${d.date} (${dayName}): ${d.contributionCount} commits`);
     });
-    console.log(`Total commits: ${totalCommits}`);
+    console.log(`Year commits: ${yearCommits}`);
     console.log(`Week commits: ${weekCommits}`);
     
     // Base SVG 로드
@@ -332,9 +332,9 @@ async function generateContributionCity() {
 <circle cx="1700" cy="1180" r="2" fill="white" opacity="0.8"/>
 <circle cx="1900" cy="1220" r="1.5" fill="white" opacity="0.6"/>
 
-<!-- TOTAL / WEEK 텍스트 -->
-<text x="50" y="1180" class="stats-label">TOTAL:</text>
-<text x="220" y="1180" class="stats-text">${totalCommits}</text>
+<!-- YEAR / WEEK 텍스트 -->
+<text x="50" y="1180" class="stats-label">YEAR:</text>
+<text x="220" y="1180" class="stats-text">${yearCommits}</text>
 <text x="50" y="1230" class="stats-label">WEEK:</text>
 <text x="220" y="1230" class="stats-text">${weekCommits}</text>
 
