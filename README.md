@@ -1,6 +1,6 @@
 # GitHub Contribution City
 
-![Contribution City](./contribution-city.svg)
+![Contribution City](./example.svg)
 
 [English](README.md) | [한국어](docs/README.ko.md)
 
